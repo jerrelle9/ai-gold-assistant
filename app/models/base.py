@@ -267,6 +267,11 @@ class DailyBriefing(TimestampMixin, Base):
     AI-generated pre-market briefing report
     """
 
+    __tablename__ = "daily_briefings"          
+    __table_args__ = (                          
+        UniqueConstraint("briefing_date", name="uq_briefing_date"),
+    )   
+
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, nullable=False)
     briefing_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
