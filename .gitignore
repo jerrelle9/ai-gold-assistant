@@ -1,0 +1,76 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+*.dll
+*.dylib
+
+# Virtual environment directories
+venv/
+env/
+.venv/
+.env/
+
+# Environment variable files
+.env
+.env.*
+
+# Sensitive config files
+*.secret
+*.key
+*.pem
+*.crt
+*.pfx
+
+# Alembic migration files
+alembic/versions/
+
+# Database files
+*.sqlite3
+*.db
+*.db-journal
+
+# Log files
+*.log
+
+# Test results
+htmlcov/
+.coverage
+.cache/
+pytest_cache/
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker
+*.pid
+
+# Misc
+*.bak
+*.tmp
+
+# Ignore requirements.txt backup
+requirements.txt.bak
+
+# Ignore Jupyter notebooks
+*.ipynb
+
+# Ignore compiled files
+*.pyo
+
+# Ignore dist and build
+build/
+dist/
+*.egg-info/
+
+# Ignore node_modules (if any)
+node_modules/
+
+# Ignore other sensitive files
+secrets.json
+config.yaml
+
+# End of .gitignore

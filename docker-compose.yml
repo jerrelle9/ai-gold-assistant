@@ -1,0 +1,101 @@
+# =============================================================================
+# docker-compose.yml — AI Gold Trading Assistant
+# Local development environment
+# =============================================================================
+# Services:
+#   db      — PostgreSQL 15
+#   app     — FastAPI application
+#
+# Usage:
+#   docker-compose up --build          Start all services
+#   docker-compose up --build -d       Start in background
+#   docker-compose exec app alembic upgrade head   Run migrations
+#   docker-compose logs -f app         Tail app logs
+#   docker-compose down -v             Stop and remove volumes
+# =============================================================================
+
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: gold_trading_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:- gold_trading}
+      POSTGRES_USER: ${POSTGRES_USER:-gold_user}
+      POSTGRES_PASSWORD: ${POSTGRESS_PASSWORD:-change-supersecret}
+      PGDATA: /var/lib/postgresql/data/pgdata
+
+    volumes:
+      -postgres_data:/var/lib/postgresql/data
+      -./scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql:ro
+
+    ports:
+      -"5432:5432"
+    
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gold_user} -d ${POSTGRES_DB:-gold_trading}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    networks:
+      - gold_trading_network
+
+    
+  app:
+    build:
+      context: .
+      dockerfile: dockerfile
+      target: runtime
+    container_name: gold_trading_app
+    restart: unless-stopped
+    env_file:
+      - .env
+    
+    environment:
+      POSTGRES_HOST: db
+      DATABASE_URL: postgresql://${POSTGRES_USER:-gold_user}:${POSTGRES_PASSWORD:-changeme_superscret}@db:5432/${POSTGRES_DB:-gold_trading}
+      APP_ENV: development
+
+      ports:
+        - "8000:8000"
+
+      depends_on:
+        db:
+          condition: service_healthy
+      
+      volumes:
+        - .:/app
+        - uploads_data:/app/uploads
+
+      
+      command: > 
+        uvicorn app.main:app
+        --host 0.0.0.0
+        --port 8000
+        --reload
+        --log-level info
+      
+      healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+        interval: 30s
+        timeout: 30s
+        retries: 3
+        start_period: 20s
+      
+      networks:
+        - gold_trading_network
+
+volumes:
+  postgres_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+
+networks:
+  gold_trading_network:
+    driver: bridge
