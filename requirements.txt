@@ -31,3 +31,9 @@ structlog==24.2.0
 pytest==8.2.2
 pytest-asyncio==0.23.7
 
+
+# Data Pipelines
+numpy==2.2.6
+pandas-ta              # ATR, VWAP, technical indicators
+yfinance==0.2.40                # Free market data (XAUUSD, DXY, US10Y)
+apscheduler==3.10.4             # Cron jobs for scheduled data fetching
