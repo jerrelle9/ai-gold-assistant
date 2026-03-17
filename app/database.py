@@ -42,6 +42,7 @@ sync_engine = create_engine(
     pool_size=5,
     max_overflow=10,
     echo=settings.DEBUG,
+    connect_args={"sslmode": "require"},
 )
 
 
@@ -65,6 +66,7 @@ async_engine = create_async_engine(
     pool_size=5,
     max_overflow=10,
     echo=settings.DEBUG,
+    connect_args={"sslmode": "require"},
 )
 
 

@@ -52,8 +52,8 @@ NY_TZ = pytz.timezone("America/New_York")
 def fetch_ohlcv(
     symbol: str,
     timeframe: str,
-    start_time: Optional[datetime] = None,
-    end_time: Optional[datetime] = None,
+    start: Optional[datetime] = None,
+    end: Optional[datetime] = None,
 ) -> pd.DataFrame:
     
     """
@@ -86,12 +86,15 @@ def fetch_ohlcv(
         return pd.DataFrame()  
 
 
-    if start is None:
-        days_back = TIMEFRAME_LOOKBACK_DAYS[timeframe]
-        start = datetime.utcnow() - timedelta(days=days_back)
+    fetch_start = start
+    fetch_end = end
 
-    if end is None:
-        end = datetime.utcnow()
+    if fetch_start is None:
+        days_back = TIMEFRAME_LOOKBACK_DAYS[timeframe]
+        fetch_start = datetime.utcnow() - timedelta(days=days_back)
+
+    if fetch_end is None:
+        fetch_end = datetime.utcnow()
 
     
     logger.info(
@@ -99,16 +102,16 @@ def fetch_ohlcv(
         symbol=symbol,
         ticker=ticker,
         timeframe=timeframe,
-        start=start.isoformat(),
-        end=end.isoformat(),
+        start=fetch_start.isoformat(),
+        end=fetch_end.isoformat(),
     )
 
 
     try:
         raw = yf.download(
             tickers=ticker,
-            start=start,
-            end=end,
+            start=fetch_start,
+            end=fetch_end,
             interval=interval,
             auto_adjust=True, #adjusts for dividends/splits
             progress=False, #suppress yfinance's progress bar

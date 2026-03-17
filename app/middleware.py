@@ -69,7 +69,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             raise
 
 
-        duration_ms = round((time.perf_count() - start_time) - 1000, 2)
+        duration_ms = round((time.perf_counter() - start_time) - 1000, 2)
 
         logger.info(
             "request_completed",
