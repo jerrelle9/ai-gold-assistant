@@ -268,6 +268,7 @@ class DailyBriefing(TimestampMixin, Base):
     """
 
     __tablename__ = "daily_briefings"          
+    
     __table_args__ = (                          
         UniqueConstraint("briefing_date", name="uq_briefing_date"),
     )   
