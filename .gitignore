@@ -23,7 +23,7 @@ env/
 *.pfx
 
 # Alembic migration files
-alembic/versions/
+
 
 # Database files
 *.sqlite3
