@@ -12,6 +12,7 @@ sqlalchemy==2.0.30
 alembic==1.13.1
 psycopg2-binary==2.9.11
 asyncpg==0.29.0
+greenlet==3.2.2
 
 #Configuration
 pydantic==2.7.1

@@ -60,13 +60,29 @@ async_db_url = settings.DATABASE_URL.replace(
     "postgresql://", "postgresql+asyncpg://"
 )
 
+
+# Strip sslmode from URL — asyncpg handles ssl via connect_args instead
+async_db_url = settings.DATABASE_URL.replace(
+    "postgresql://", "postgresql+asyncpg://"
+).replace(
+    "?sslmode=require", ""
+).replace(
+    "&sslmode=require", ""
+)
+
+from urllib.parse import urlparse, urlunparse
+
+# Parse the URL and strip all query parameters for asyncpg
+_parsed = urlparse(settings.DATABASE_URL)
+_clean_url = urlunparse(_parsed._replace(scheme="postgresql+asyncpg", query=""))
+
 async_engine = create_async_engine(
-    async_db_url,
+    _clean_url,
     pool_pre_ping=True,
     pool_size=5,
     max_overflow=10,
     echo=settings.DEBUG,
-    connect_args={"sslmode": "require"},
+    connect_args={"ssl": True},
 )
 
 
