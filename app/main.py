@@ -31,11 +31,11 @@ async def lifespan(app: FastAPI):
 
     # star the background scheduler
     from app.scheduler import scheduler
-    scheduler.start()
-    logger.info(
-        "scheduler_started",
-        jobs=[job.id for job in scheduler.get_jobs()],
-    )
+    # scheduler.start()
+    # logger.info(
+    #     "scheduler_started",
+    #     jobs=[job.id for job in scheduler.get_jobs()],
+    # )
 
     logger.info("application_ready")
     yield
