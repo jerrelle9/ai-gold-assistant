@@ -43,6 +43,8 @@ TIMEFRAMES = ["1m", "5m", "15m"]
 # in a thread pool, not in the async event loop.
 
 
+#Phase 2 jobs
+
 def fetch_market_data_job() -> None:
     """
     Fetch the latest candles for all symbols and timeframes
@@ -165,6 +167,71 @@ def pre_market_fetch_job() -> None:
     logger.info("job_completed", job="pre_market_fetch")
 
 
+#Phase 3 jobs
+def fetch_and_analyze_news_job() -> None:
+    """
+    Fetch latest gold news and run sentiment analysis.
+    Runs at 4:00 AM EST daily.
+ 
+    Steps:
+      1. Fetch last 24 hours of gold-related headlines from NewsAPI
+      2. Run FinBERT sentiment analysis on each article
+      3. Save articles with sentiment labels to news_articles table
+      4. Compute daily sentiment score and save to sentiment_scores table
+    """
+
+    logger.info("job_started", job="fetch_and_analyze_news")
+
+    try:
+        from app.services.news.fetcher import fetch_all_gold_news
+        from app.services.news.sentiment import(
+            analyze_batch,
+            compute_daily_sentiment_score,
+            is_model_available,
+        )
+        from app.services.news.storage import save_articles, save_sentiment_score
+
+        if not is_model_available():
+            logger.error(
+                "sentiment_model_unavailable",
+                hint="Run: pip install torch transformers",
+            )
+            return
+        
+        articles = fetch_all_gold_news(hours_back=24)
+        logger.info("news_fetched", count=len(articles))
+
+        if not articles:
+            logger.warning("no_news_articles_found")
+            return
+        
+        articles_with_sentiment = analyze_batch(articles)
+        saved = save_articles(articles_with_sentiment)
+        logger.info("news_articles_saved", inserted=saved)
+
+        xauusd_articles = [
+            a for a in articles_with_sentiment
+            if a.get("related_symbol") == "XAUUSD"
+        ]
+
+
+        if xauusd_articles:
+            daily_score = compute_daily_sentiment_score(xauusd_articles)
+            save_sentiment_score("XAUUSD", daily_score)
+            logger.info(
+                "daily_sentiment_saved",
+                label=daily_score["label"],
+                score=daily_score["score"],
+                articles=daily_score["article_count"],
+            )
+    
+    except Exception as exc:
+        logger.error("fetch_and_analyze_news_failed", error=str(exc))
+    
+    logger.info("job_completed", job="fetch_and_analyze_news")
+
+
+
 #Scheduler setup
 def create_scheduler() -> BackgroundScheduler:
     """
@@ -183,7 +250,7 @@ def create_scheduler() -> BackgroundScheduler:
 
     scheduler = BackgroundScheduler(timezone=NY_TZ)
 
-    # Job 1: Pre-market data load — 3:50 AM EST, Monday to Friday 
+    # Phase 2 jobs
     scheduler.add_job(
         func=pre_market_fetch_job,
         trigger=CronTrigger(
@@ -231,14 +298,28 @@ def create_scheduler() -> BackgroundScheduler:
         replace_existing=True,
     )
 
+
+    # ============================================================================
+    # ====================== Phase 3 jobs ========================================
+    #=============================================================================
+
+    scheduler.add_job(
+        func=fetch_and_analyze_news_job,
+        trigger=CronTrigger(hour=4, minute=0, day_of_week="mon-fri", timezone=NY_TZ),
+        id="fetch_and_analyze_news",
+        name="Fetch News and Analyze Sentiment",
+        replace_existing=True,
+        misfire_grace_time=300,
+    )
+
+    # ==============================================================================
+
     logger.info(
         "scheduler_configured",
         jobs=[job.id for job in scheduler.get_jobs()],
     )
 
     return scheduler
-
-
 
 # Module-level scheduler instance
 # Started in main.py lifespan, stopped on shutdown

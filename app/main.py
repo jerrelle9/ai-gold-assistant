@@ -12,7 +12,7 @@ from app.core.logging import configure_logging, get_logger
 from app.middleware import register_middleware
 from app.routers.health import router as health_router
 from app.routers.market_data import router as market_data_router
-
+from app.routers.sentiment import router as sentiment_router
 
 configure_logging()
 logger=get_logger(__name__)
@@ -43,13 +43,9 @@ async def lifespan(app: FastAPI):
 
     #shutdown
     logger.info("application_shutting_down")
-
-    #gracefully stop the scheduler - waits for running jobs to finsh
     from app.scheduler import scheduler
     scheduler.shutdown(wait=True)
-    logger.info("scheduler_stopped")
-
-
+    # logger.info("scheduler_stopped")
     logger.info("application_stopped")
 
 
@@ -60,7 +56,14 @@ app=FastAPI(
     description="""
 ## AI Assistant for Intraday Gold Trading (NY Session)
 
-A production-ready AI-powered assistant for discretionary XAUUSD traders.
+- **Phase 1** — Foundation & Infrastructure ✅
+- **Phase 2** — Market Data Pipelines ✅
+- **Phase 3** — News & Sentiment Analysis ✅
+- **Phase 4** — AI Briefing & Pattern Detection 🔜
+- **Phase 5** — Trade Journal 🔜
+- **Phase 6** — Backtesting Engine 🔜
+- **Phase 7** — Dashboard 🔜
+- **Phase 8** — Deployment 🔜
 
     """,
     docs_url="/docs",
@@ -75,6 +78,7 @@ register_middleware(app)
 #routers
 app.include_router(health_router)
 app.include_router(market_data_router, prefix=settings.API_PREFIX)
+app.include_router(sentiment_router, prefix=settings.API_PREFIX)
 
 
 @app.get("/", tags=["Root"])
