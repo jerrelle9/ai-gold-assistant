@@ -36,6 +36,10 @@ class SentimentResponse(BaseModel):
     bearish_count: int
     neutral_count: int
 
+class AnalyzeRequest(BaseModel):
+    symbol: Optional[str] = None
+    hours_back: int = 24
+
 class AnalyzeResponse(BaseModel):
     success: bool
     message: str
@@ -57,7 +61,7 @@ async def model_status():
     available = is_model_available()
 
     return{
-        "succes": True,
+        "success": True,
         "model": "ProsusAI/finbert",
         "available": available,
         "message":(
