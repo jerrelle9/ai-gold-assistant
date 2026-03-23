@@ -38,3 +38,10 @@ numpy==2.2.6
 pandas-ta              # ATR, VWAP, technical indicators
 yfinance==1.2.0                # Free market data (XAUUSD, DXY, US10Y)
 apscheduler==3.10.4             # Cron jobs for scheduled data fetching
+
+
+#phase 3 news and sentiment
+requests==2.32.3                # NewsAPI HTTP calls
+transformers==4.41.2            # HuggingFace sentiment pipeline
+torch==2.3.1                    # PyTorch backend for transformers
+scipy==1.13.1                   # Required by some transformers models
