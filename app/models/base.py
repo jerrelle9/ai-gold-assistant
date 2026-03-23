@@ -122,7 +122,7 @@ class TechnicalIndicator(TimestampMixin, Base):
     daily_low: Mapped[Decimal] = mapped_column(Numeric(12,5), nullable=False)
     prev_day_high: Mapped[Decimal] = mapped_column(Numeric(12,5), nullable=False)
     prev_day_low: Mapped[Decimal] = mapped_column(Numeric(12,5), nullable=False)
-    prev_day_vol: Mapped[Decimal] = mapped_column(Numeric(12,5), nullable=False)
+    prev_day_close: Mapped[Decimal] = mapped_column(Numeric(12,5), nullable=False)
 
 
     def __repr__(self) -> str:
