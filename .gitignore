@@ -22,9 +22,6 @@ env/
 *.crt
 *.pfx
 
-# Alembic migration files
-
-
 # Database files
 *.sqlite3
 *.db
