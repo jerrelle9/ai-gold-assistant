@@ -71,6 +71,9 @@ def compute_and_save_indicators(
 
     if target_date is None:
         target_date = datetime.now(NY_TZ).date()
+
+    if isinstance(target_date, datetime):
+        target_date = target_date.date()
     
     logger.info(
         "computing_indicators",
@@ -100,10 +103,10 @@ def compute_and_save_indicators(
     df["date_ny"] = df["timestamp_ny"].dt.date
 
     today_df = df[df["date_ny"] == target_date].copy()
-    df["date_ny"] = sorted(df["date_ny"].unique())
 
+    prev_dates = sorted(df["date_ny"].unique())
     prev_date = None
-    for d in prev_date:
+    for d in prev_dates:
         if d < target_date:
             prev_date = d
 
@@ -229,7 +232,7 @@ def _compute_session_levels(df: pd.DataFrame) -> dict:
             lambda ts: time_filter(ts)    
         )]
 
-        if not session_df.empty:
+        if  session_df.empty:
             result[f"{session_name}_session_high"] = None
             result[f"{session_name}_session_low"] = None
         else:
