@@ -335,7 +335,7 @@ def get_latest_indicators(symbol: str, timeframe: str) -> Optional[dict]:
                 .order_by(TechnicalIndicator.date.desc())
                 .limit(1)
             )
-            .scalers()
+            .scalars()
             .first()
         )
 
