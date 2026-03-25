@@ -116,6 +116,7 @@ class TechnicalIndicator(TimestampMixin, Base):
     ny_session_high: Mapped[Decimal] = mapped_column(Numeric(12,5),nullable=True)
     asian_session_low: Mapped[Decimal] = mapped_column(Numeric(12,5),nullable=True)
     london_session_low: Mapped[Decimal] = mapped_column(Numeric(12,5),nullable=True)
+    ny_session_low: Mapped[Decimal] = mapped_column(Numeric(12,5),nullable=True)
     
 
     daily_high: Mapped[Decimal] = mapped_column(Numeric(12,5), nullable=True)
