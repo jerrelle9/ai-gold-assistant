@@ -98,7 +98,7 @@ class TechnicalIndicator(TimestampMixin, Base):
     )
 
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     symbol: Mapped[str] = mapped_column(String(20), nullable=False)
     timeframe: Mapped[str] = mapped_column(String(5), nullable=False)
     date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
@@ -111,18 +111,18 @@ class TechnicalIndicator(TimestampMixin, Base):
     vwap: Mapped[Decimal] = mapped_column(Numeric(12,5), nullable=True)
 
     #session levels
-    asian_session_high: Mapped[Decimal] = mapped_column(Numeric(12,5),nullable=False)
-    london_session_high: Mapped[Decimal] = mapped_column(Numeric(12,5),nullable=False)
-    ny_session_high: Mapped[Decimal] = mapped_column(Numeric(12,5),nullable=False)
-    asian_session_low: Mapped[Decimal] = mapped_column(Numeric(12,5),nullable=False)
-    london_session_low: Mapped[Decimal] = mapped_column(Numeric(12,5),nullable=False)
-    asian_session_low: Mapped[Decimal] = mapped_column(Numeric(12,5),nullable=False)
+    asian_session_high: Mapped[Decimal] = mapped_column(Numeric(12,5),nullable=True)
+    london_session_high: Mapped[Decimal] = mapped_column(Numeric(12,5),nullable=True)
+    ny_session_high: Mapped[Decimal] = mapped_column(Numeric(12,5),nullable=True)
+    asian_session_low: Mapped[Decimal] = mapped_column(Numeric(12,5),nullable=True)
+    london_session_low: Mapped[Decimal] = mapped_column(Numeric(12,5),nullable=True)
+    
 
-    daily_high: Mapped[Decimal] = mapped_column(Numeric(12,5), nullable=False)
-    daily_low: Mapped[Decimal] = mapped_column(Numeric(12,5), nullable=False)
-    prev_day_high: Mapped[Decimal] = mapped_column(Numeric(12,5), nullable=False)
-    prev_day_low: Mapped[Decimal] = mapped_column(Numeric(12,5), nullable=False)
-    prev_day_close: Mapped[Decimal] = mapped_column(Numeric(12,5), nullable=False)
+    daily_high: Mapped[Decimal] = mapped_column(Numeric(12,5), nullable=True)
+    daily_low: Mapped[Decimal] = mapped_column(Numeric(12,5), nullable=True)
+    prev_day_high: Mapped[Decimal] = mapped_column(Numeric(12,5), nullable=True)
+    prev_day_low: Mapped[Decimal] = mapped_column(Numeric(12,5), nullable=True)
+    prev_day_close: Mapped[Decimal] = mapped_column(Numeric(12,5), nullable=True)
 
 
     def __repr__(self) -> str:
