@@ -21,6 +21,7 @@ All timestamps stored in database are UTC.
 from datetime import datetime, date
 from typing import Optional
 from decimal import Decimal
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 import numpy as np
@@ -33,7 +34,8 @@ from app.services.market_data.storage import load_candles
 
 logger = get_logger(__name__)
 
-NY_TZ = pytz.timezone("America/New_York")
+NY_TZ = ZoneInfo("America/New_York")
+# NY_TZ = pytz.timezone("America/New_York")
 UTC_TZ = pytz.utc  
 
 # Session hours in New York time (hour, minute)
@@ -51,30 +53,20 @@ def compute_and_save_indicators(
     timeframe: str,
     target_date: Optional[datetime] = None,
 ) -> Optional[dict]:
-    
     """
     Compute all indicators for a symbol/timeframe on a given date
     and save them to the technical_indicators table.
- 
-    Args:
-        symbol:      e.g. "XAUUSD"
-        timeframe:   e.g. "5m"
-        target_date: Date to compute indicators for. Defaults to today.
- 
-    Returns:
-        Dict of computed indicator values, or None if insufficient data.
- 
-    Example:
-        result = compute_and_save_indicators("XAUUSD", "5m")
-        print(result["atr_14"])
     """
+
+    if NY_TZ is None:
+        raise ValueError("NY_TZ is not initialized")
 
     if target_date is None:
         target_date = datetime.now(NY_TZ).date()
 
     if isinstance(target_date, datetime):
         target_date = target_date.date()
-    
+
     logger.info(
         "computing_indicators",
         symbol=symbol,
@@ -82,8 +74,8 @@ def compute_and_save_indicators(
         date=str(target_date),
     )
 
-    # Load candles for the target date + previous day (needed for prev_day values)
-    target_dt=datetime.combine(target_date, datetime.min.time())
+    # Load candles for target date + previous 2 days
+    target_dt = datetime.combine(target_date, datetime.min.time())
     start_dt = target_dt - pd.Timedelta(days=2)
 
     df = load_candles(symbol, timeframe, start=start_dt, limit=2000)
@@ -96,7 +88,22 @@ def compute_and_save_indicators(
             rows=len(df),
         )
         return None
-    
+
+    if "timestamp" not in df.columns:
+        raise ValueError(f"'timestamp' column missing for {symbol} {timeframe}")
+
+    if df["timestamp"].isna().all():
+        raise ValueError(f"All timestamps are null for {symbol} {timeframe}")
+
+    logger.info(
+        "loaded_candles_debug",
+        symbol=symbol,
+        timeframe=timeframe,
+        rows=len(df),
+        timestamp_dtype=str(df["timestamp"].dtype),
+        null_timestamps=int(df["timestamp"].isna().sum()),
+        ny_tz=str(NY_TZ),
+    )
 
     # Convert timestamps to NY timezone for session filtering
     df["timestamp_ny"] = df["timestamp"].dt.tz_convert(NY_TZ)
@@ -116,10 +123,11 @@ def compute_and_save_indicators(
         logger.warning(
             "no_data_for_target_date",
             symbol=symbol,
+            timeframe=timeframe,
             date=str(target_date),
         )
         return None
-    
+
     indicators = {}
     indicators.update(_compute_atr(df))
     indicators.update(_compute_vwap(today_df))
@@ -127,11 +135,9 @@ def compute_and_save_indicators(
     indicators.update(_compute_daily_levels(today_df))
     indicators.update(_compute_prev_day_levels(prev_df))
 
-
     _save_indicators(symbol, timeframe, target_date, indicators)
 
     logger.info(
-
         "indicators_saved",
         symbol=symbol,
         timeframe=timeframe,
