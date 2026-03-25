@@ -178,16 +178,44 @@ async def get_indicators(
 
     _validate_symbol(symbol)
 
-    from app.services.market_data.indicators import get_latest_indicators
+    from app.services.market_data.indicators import (
+        get_latest_indicators,
+        compute_and_save_indicators,
+    )
+
+    try:
+        # First compute/update indicators
+        compute_result = compute_and_save_indicators(symbol, timeframe)
+        logger.info(
+            "indicators_computed_via_api",
+            symbol=symbol,
+            timeframe=timeframe,
+            result=compute_result,
+        )
+    except Exception as exc:
+        logger.error(
+            "indicators_compute_failed_via_api",
+            symbol=symbol,
+            timeframe=timeframe,
+            error=str(exc),
+        )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to compute indicators for {symbol} {timeframe}: {str(exc)}"
+        )
+
+    # Then fetch the latest saved indicators
     result = get_latest_indicators(symbol, timeframe)
 
     if not result:
         raise HTTPException(
             status_code=404,
-            detail= f"No indicators found for {symbol} {timeframe}."
-                    f"Try POST /market-data/fetch to load data first.",
+            detail=(
+                f"No indicators found for {symbol} {timeframe}. "
+                f"Indicator computation may have failed or no market data exists."
+            ),
         )
-    
+
     return {"success": True, "indicators": result}
 
 
