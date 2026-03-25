@@ -102,6 +102,7 @@ def compute_indicators_job() -> None:
         for timeframe in ["5m", "15m"]:  # Indicators on 5m and 15m only
             try:
                 result = compute_and_save_indicators(symbol, timeframe)
+                logger.info("indicators_computed", symbol=symbol)
                 if result:
                     logger.info(
                         "job_symbol_completed",
@@ -251,66 +252,82 @@ def create_scheduler() -> BackgroundScheduler:
     scheduler = BackgroundScheduler(timezone=NY_TZ)
 
     # Phase 2 jobs
+    # scheduler.add_job(
+    #     func=pre_market_fetch_job,
+    #     trigger=CronTrigger(
+    #         hour=3,
+    #         minute=50,
+    #         day_of_week="mon-fri",
+    #         timezone=NY_TZ,
+    #     ),
+    #     id="pre_market_fetch",
+    #     name="Pre-market data load",
+    #     replace_existing=True,
+    #     misfire_grace_time= 300, # Allow up to 5 min late start
+    # )
     scheduler.add_job(
-        func=pre_market_fetch_job,
-        trigger=CronTrigger(
-            hour=3,
-            minute=50,
-            day_of_week="mon-fri",
-            timezone=NY_TZ,
-        ),
-        id="pre_market_fetch",
-        name="Pre-market data load",
+        func=fetch_market_data_job,
+        trigger=IntervalTrigger(minutes=5), # Runs every 5 mins starting NOW
+        id="fetch_market_data",
+        name="Fetch Market Data",
         replace_existing=True,
-        misfire_grace_time= 300, # Allow up to 5 min late start
     )
+
+    scheduler.add_job(
+        func=compute_indicators_job,
+        trigger=IntervalTrigger(minutes=5), # Run frequently to see results
+        id="compute_indicators",
+        name="Compute Technical Indicators",
+        replace_existing=True,
+    )
+
 
 
     # Job 2: Fetch market data every 5 minutes during NY session
     # 4:00 AM – 5:00 PM EST, Monday to Friday
 
-    scheduler.add_job(
-        func=fetch_market_data_job,
-        trigger=CronTrigger(
-            hour="4-17", 
-            minute="*/5",
-            day_of_week="mon-fri",
-            timezone=NY_TZ,
-        ),
-        id="fetch_market_data",
-        name="Fetch Market Data (5 min)",
-        misfire_grace_time= 120,
-        replace_existing=True,
-    )
+    # scheduler.add_job(
+    #     func=fetch_market_data_job,
+    #     trigger=CronTrigger(
+    #         hour="4-17", 
+    #         minute="*/5",
+    #         day_of_week="mon-fri",
+    #         timezone=NY_TZ,
+    #     ),
+    #     id="fetch_market_data",
+    #     name="Fetch Market Data (5 min)",
+    #     misfire_grace_time= 120,
+    #     replace_existing=True,
+    # )
 
     # Job 3: Recompute indicators every 15 minutes during NY session
-    scheduler.add_job(
-        func=compute_indicators_job,
-        trigger=CronTrigger(
-            hour="4-17", 
-            minute="*/15",
-            day_of_week="mon-fri",
-            timezone=NY_TZ,
-        ),
-        id="compute_indicators",
-        name="Compute Technical Indicators",
-        misfire_grace_time= 180,
-        replace_existing=True,
-    )
+    # scheduler.add_job(
+    #     func=compute_indicators_job,
+    #     trigger=CronTrigger(
+    #         hour="4-17", 
+    #         minute="*/15",
+    #         day_of_week="mon-fri",
+    #         timezone=NY_TZ,
+    #     ),
+    #     id="compute_indicators",
+    #     name="Compute Technical Indicators",
+    #     misfire_grace_time= 180,
+    #     replace_existing=True,
+    # )
 
 
     # ============================================================================
     # ====================== Phase 3 jobs ========================================
     #=============================================================================
 
-    scheduler.add_job(
-        func=fetch_and_analyze_news_job,
-        trigger=CronTrigger(hour=4, minute=0, day_of_week="mon-fri", timezone=NY_TZ),
-        id="fetch_and_analyze_news",
-        name="Fetch News and Analyze Sentiment",
-        replace_existing=True,
-        misfire_grace_time=300,
-    )
+    # scheduler.add_job(
+    #     func=fetch_and_analyze_news_job,
+    #     trigger=CronTrigger(hour=4, minute=0, day_of_week="mon-fri", timezone=NY_TZ),
+    #     id="fetch_and_analyze_news",
+    #     name="Fetch News and Analyze Sentiment",
+    #     replace_existing=True,
+    #     misfire_grace_time=300,
+    # )
 
     # ==============================================================================
 
