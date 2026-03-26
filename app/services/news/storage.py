@@ -248,7 +248,7 @@ def get_recent_articles(
         if label:
             query = query.where(NewsArticle.sentiment_label == label)
 
-        rows = session.execute(query).scalers().all()
+        rows = session.execute(query).scalars().all()
 
     return[
         {
@@ -290,7 +290,7 @@ def get_sentiment_history(symbol: str, days: int = 30) -> list[dict]:
             .where(SentimentScore.symbol == symbol)
             .where(SentimentScore.date >= cutoff)
             .order_by(SentimentScore.date.asc())
-        ).scalers().all()
+        ).scalars().all()
     
     return[
         {
