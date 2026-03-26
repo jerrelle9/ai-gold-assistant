@@ -265,13 +265,14 @@ def create_scheduler() -> BackgroundScheduler:
     #     replace_existing=True,
     #     misfire_grace_time= 300, # Allow up to 5 min late start
     # )
-    scheduler.add_job(
-        func=fetch_market_data_job,
-        trigger=IntervalTrigger(minutes=5), # Runs every 5 mins starting NOW
-        id="fetch_market_data",
-        name="Fetch Market Data",
-        replace_existing=True,
-    )
+    
+    # scheduler.add_job(
+    #     func=fetch_market_data_job,
+    #     trigger=IntervalTrigger(minutes=5), # Runs every 5 mins starting NOW
+    #     id="fetch_market_data",
+    #     name="Fetch Market Data",
+    #     replace_existing=True,
+    # )
 
     scheduler.add_job(
         func=compute_indicators_job,
@@ -330,13 +331,13 @@ def create_scheduler() -> BackgroundScheduler:
     # )
 
     scheduler.add_job(
-    func=fetch_and_analyze_news_job,
-    trigger=IntervalTrigger(hours=24, timezone=NY_TZ),
-    id="fetch_and_analyze_news",
-    name="Fetch News and Analyze Sentiment",
-    replace_existing=True,
-    misfire_grace_time=300,
-)
+        func=fetch_and_analyze_news_job,
+        trigger=IntervalTrigger(hours=24, timezone=NY_TZ),
+        id="fetch_and_analyze_news",
+        name="Fetch News and Analyze Sentiment",
+        replace_existing=True,
+        misfire_grace_time=300,
+    )
 
     # ==============================================================================
 
