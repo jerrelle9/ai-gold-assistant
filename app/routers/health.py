@@ -43,7 +43,7 @@ def _error_response(message:str, **kwargs) -> dict:
 
 # Endpoints
 
-@router.get("", methods=["GET", "HEAD"],summary="Liveness probe",)
+@router.api_route("", methods=["GET", "HEAD"], summary="Liveness probe")
 async def health_check():
     """
     Confirms the app process is running.
