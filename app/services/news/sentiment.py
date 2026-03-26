@@ -101,7 +101,7 @@ def analyze_article(title: str, description: str="") -> dict:
     #Combine title and desciption for richer context
     #Title is more important so we weight it by including it twice
 
-    text = f"{{title}. {title}. {description}. strip()}"
+    text = f"{title}. {title}. {description}". strip()
 
     #truncate to aavoid tokenizer warnings (512 token limit)
     text = text[:1000]
@@ -243,7 +243,7 @@ def compute_daily_sentiment_score(articles:list[dict]) -> dict:
             "neutral_count": 0,
         }
     
-    scores = [a.get("sentiment_score"), 0.0 for a in articles]
+    scores = [a.get("sentiment_score", 0.0) for a in articles]
     labels = [a.get("sentiment_label", "neutral") for a in articles]
 
     avg_score = sum(scores) / len(scores)

@@ -238,7 +238,7 @@ def get_recent_articles(
     with SyncSessionLocal() as session:
         query = (
             select(NewsArticle)
-            .order_by(NewsArticle.published_at.des())
+            .order_by(NewsArticle.published_at.desc())
             .limit(limit)
         )
 
