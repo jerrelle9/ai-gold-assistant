@@ -56,7 +56,7 @@ def _load_pipeline():
     logger.info("loading_sentiment_model", model=MODEL_NAME)
 
     pipe = pipeline(
-        task="text-classfication",
+        task="text-classification",
         model=MODEL_NAME,
         tokenizer=MODEL_NAME,
         top_k=None,

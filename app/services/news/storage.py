@@ -79,7 +79,7 @@ def save_articles(articles: list[dict]) -> int:
                     related_symbol=article.get("related_symbol"),
                     sentiment_label=article.get("sentiment_label"),
                     sentiment_score=Decimal(str(article["sentiment_score"]))
-                    if article.get("sentiment_Score") is not None
+                    if article.get("sentiment_score") is not None
                     else None,
                 )
                 session.add(row)
@@ -193,7 +193,7 @@ def get_latest_sentiment(symbol: str) -> Optional[dict]:
             select(SentimentScore)
             .where(SentimentScore.symbol == symbol)
             .order_by(SentimentScore.date.desc())
-            .limt(1)
+            .limit(1)
         ).scalar_one_or_none()
     
     if not row:
@@ -294,7 +294,7 @@ def get_sentiment_history(symbol: str, days: int = 30) -> list[dict]:
     
     return[
         {
-            "date": r.daate.isoformat(),
+            "date": r.date.isoformat(),
             "score": float(r.score),
             "label": r.label,
             "article_count": r.article_count,

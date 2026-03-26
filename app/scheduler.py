@@ -33,7 +33,7 @@ logger = get_logger(__name__)
 NY_TZ = pytz.timezone('America/New_York')
 
 # Symbols and timeframes to fetch on each cycle
-SYMBOLS = ["XAUUSD", "DXY", "US10y"]
+SYMBOLS = ["XAUUSD", "DXY", "US10Y"]
 TIMEFRAMES = ["1m", "5m", "15m"]
 
 
@@ -170,65 +170,49 @@ def pre_market_fetch_job() -> None:
 
 #Phase 3 jobs
 def fetch_and_analyze_news_job() -> None:
-    """
-    Fetch latest gold news and run sentiment analysis.
-    Runs at 4:00 AM EST daily.
- 
-    Steps:
-      1. Fetch last 24 hours of gold-related headlines from NewsAPI
-      2. Run FinBERT sentiment analysis on each article
-      3. Save articles with sentiment labels to news_articles table
-      4. Compute daily sentiment score and save to sentiment_scores table
-    """
-
     logger.info("job_started", job="fetch_and_analyze_news")
 
     try:
         from app.services.news.fetcher import fetch_all_gold_news
-        from app.services.news.sentiment import(
-            analyze_batch,
-            compute_daily_sentiment_score,
-            is_model_available,
-        )
         from app.services.news.storage import save_articles, save_sentiment_score
+        from app.services.news.sentiment import is_model_available
 
-        if not is_model_available():
-            logger.error(
-                "sentiment_model_unavailable",
-                hint="Run: pip install torch transformers",
-            )
-            return
-        
+        # Step 1 — Always fetch articles
         articles = fetch_all_gold_news(hours_back=24)
         logger.info("news_fetched", count=len(articles))
 
         if not articles:
             logger.warning("no_news_articles_found")
             return
-        
-        articles_with_sentiment = analyze_batch(articles)
-        saved = save_articles(articles_with_sentiment)
+
+        # Step 2 — Only run sentiment if model is available
+        if is_model_available():
+            from app.services.news.sentiment import (
+                analyze_batch,
+                compute_daily_sentiment_score,
+            )
+            articles = analyze_batch(articles)
+
+            xauusd_articles = [
+                a for a in articles
+                if a.get("related_symbol") == "XAUUSD"
+            ]
+            if xauusd_articles:
+                daily_score = compute_daily_sentiment_score(xauusd_articles)
+                save_sentiment_score("XAUUSD", daily_score)
+        else:
+            logger.warning(
+                "sentiment_skipped",
+                reason="torch not installed — articles saved without sentiment labels",
+            )
+
+        # Step 3 — Always save articles regardless of sentiment
+        saved = save_articles(articles)
         logger.info("news_articles_saved", inserted=saved)
 
-        xauusd_articles = [
-            a for a in articles_with_sentiment
-            if a.get("related_symbol") == "XAUUSD"
-        ]
-
-
-        if xauusd_articles:
-            daily_score = compute_daily_sentiment_score(xauusd_articles)
-            save_sentiment_score("XAUUSD", daily_score)
-            logger.info(
-                "daily_sentiment_saved",
-                label=daily_score["label"],
-                score=daily_score["score"],
-                articles=daily_score["article_count"],
-            )
-    
     except Exception as exc:
         logger.error("fetch_and_analyze_news_failed", error=str(exc))
-    
+
     logger.info("job_completed", job="fetch_and_analyze_news")
 
 
@@ -265,7 +249,7 @@ def create_scheduler() -> BackgroundScheduler:
     #     replace_existing=True,
     #     misfire_grace_time= 300, # Allow up to 5 min late start
     # )
-    
+
     # scheduler.add_job(
     #     func=fetch_market_data_job,
     #     trigger=IntervalTrigger(minutes=5), # Runs every 5 mins starting NOW
@@ -332,7 +316,7 @@ def create_scheduler() -> BackgroundScheduler:
 
     scheduler.add_job(
         func=fetch_and_analyze_news_job,
-        trigger=IntervalTrigger(hours=24, timezone=NY_TZ),
+        trigger=IntervalTrigger(hours=5, timezone=NY_TZ),
         id="fetch_and_analyze_news",
         name="Fetch News and Analyze Sentiment",
         replace_existing=True,
