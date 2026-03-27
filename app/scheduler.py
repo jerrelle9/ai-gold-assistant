@@ -264,6 +264,7 @@ def create_scheduler() -> BackgroundScheduler:
         id="compute_indicators",
         name="Compute Technical Indicators",
         replace_existing=True,
+        max_instances=1
     )
 
 
@@ -316,11 +317,12 @@ def create_scheduler() -> BackgroundScheduler:
 
     scheduler.add_job(
         func=fetch_and_analyze_news_job,
-        trigger=IntervalTrigger(minutes=5, timezone=NY_TZ),
+        trigger=IntervalTrigger(minutes=30, timezone=NY_TZ),
         id="fetch_and_analyze_news",
         name="Fetch News and Analyze Sentiment",
         replace_existing=True,
         misfire_grace_time=300,
+        max_instances=1
     )
 
     # ==============================================================================
