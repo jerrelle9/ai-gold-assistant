@@ -69,7 +69,7 @@ GOLD_QUERIES = [
 def fetch_news(
     query: str,
     related_symbol: str,
-    from_date: Optional[datetime] = None,
+    # from_date: Optional[datetime] = None,
     page_size: int = 20,
 )-> list[dict]:
     """
@@ -99,13 +99,13 @@ def fetch_news(
         )
         return[]
     
-    if from_date is None:
-        from_date = datetime.utcnow() - timedelta(hours=24)
+    # if from_date is None:
+    #     from_date = datetime.utcnow() - timedelta(hours=24)
 
     
     params = {
         "q": query,
-        "from": from_date.strftime("%Y-%m-%dT%H:%M:%S"),
+        # "from": from_date.strftime("%Y-%m-%dT%H:%M:%S"),
         "sortBy": "publishedAt",
         "language": "en",
         "pageSize": min(page_size, 100),
@@ -117,7 +117,7 @@ def fetch_news(
         "fetching_news",
         query=query,
         symbol=related_symbol,
-        from_date=from_date.isoformat(),
+        # from_date=from_date.isoformat(),
     )
 
     try:
@@ -156,9 +156,9 @@ def fetch_news(
                 "description": article.get("description") or "",
                 "content": article.get("content") or "",
                 "source_name": article.get("source", {}).get("name", ""),
-                "url": article.get("url", "")
                 "published_at": published_at,
                 "related_symbol": related_symbol,
+                "url": article.get("url", "")
             })
         
         logger.info(
@@ -198,7 +198,7 @@ def fetch_all_gold_news(hours_back: int = 24) -> list[dict]:
         print(f"Total articles: {len(articles)}")
     """
      
-    from_date = datetime.utcnow() - timedelta(hours=hours_back)
+    # from_date = datetime.utcnow() - timedelta(hours=hours_back)
     all_articles = []
     seen_urls = set()
 
@@ -206,7 +206,7 @@ def fetch_all_gold_news(hours_back: int = 24) -> list[dict]:
         articles = fetch_news(
             query=query_config["q"],
             related_symbol=query_config["related_symbol"],
-            from_date=from_date,
+            # from_date=from_date,
             page_size=20,
         )
 
