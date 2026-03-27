@@ -156,7 +156,7 @@ def fetch_news(
                 "description": article.get("description") or "",
                 "content": article.get("content") or "",
                 "source_name": article.get("source", {}).get("name", ""),
-                "url": article.get("url", ""),
+                "url": article.get("url", "")
                 "published_at": published_at,
                 "related_symbol": related_symbol,
             })
