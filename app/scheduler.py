@@ -316,7 +316,7 @@ def create_scheduler() -> BackgroundScheduler:
 
     scheduler.add_job(
         func=fetch_and_analyze_news_job,
-        trigger=IntervalTrigger(hours=5, timezone=NY_TZ),
+        trigger=IntervalTrigger(minutes=5, timezone=NY_TZ),
         id="fetch_and_analyze_news",
         name="Fetch News and Analyze Sentiment",
         replace_existing=True,
