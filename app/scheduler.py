@@ -169,51 +169,51 @@ def pre_market_fetch_job() -> None:
 
 
 #Phase 3 jobs
-def fetch_and_analyze_news_job() -> None:
-    logger.info("job_started", job="fetch_and_analyze_news")
+# def fetch_and_analyze_news_job() -> None:
+#     logger.info("job_started", job="fetch_and_analyze_news")
 
-    try:
-        from app.services.news.fetcher import fetch_all_gold_news
-        from app.services.news.storage import save_articles, save_sentiment_score
-        from app.services.news.sentiment import is_model_available
+#     try:
+#         from app.services.news.fetcher import fetch_all_gold_news
+#         from app.services.news.storage import save_articles, save_sentiment_score
+#         from app.services.news.sentiment import is_model_available
 
-        # Step 1 — Always fetch articles
-        articles = fetch_all_gold_news(hours_back=24)
-        logger.info("news_fetched", count=len(articles))
+#         # Step 1 — Always fetch articles
+#         articles = fetch_all_gold_news(hours_back=24)
+#         logger.info("news_fetched", count=len(articles))
 
-        if not articles:
-            logger.warning("no_news_articles_found")
-            return
+#         if not articles:
+#             logger.warning("no_news_articles_found")
+#             return
 
-        # Step 2 — Only run sentiment if model is available
-        if is_model_available():
-            from app.services.news.sentiment import (
-                analyze_batch,
-                compute_daily_sentiment_score,
-            )
-            articles = analyze_batch(articles)
+#         # Step 2 — Only run sentiment if model is available
+#         if is_model_available():
+#             from app.services.news.sentiment import (
+#                 analyze_batch,
+#                 compute_daily_sentiment_score,
+#             )
+#             articles = analyze_batch(articles)
 
-            xauusd_articles = [
-                a for a in articles
-                if a.get("related_symbol") == "XAUUSD"
-            ]
-            if xauusd_articles:
-                daily_score = compute_daily_sentiment_score(xauusd_articles)
-                save_sentiment_score("XAUUSD", daily_score)
-        else:
-            logger.warning(
-                "sentiment_skipped",
-                reason="torch not installed — articles saved without sentiment labels",
-            )
+#             xauusd_articles = [
+#                 a for a in articles
+#                 if a.get("related_symbol") == "XAUUSD"
+#             ]
+#             if xauusd_articles:
+#                 daily_score = compute_daily_sentiment_score(xauusd_articles)
+#                 save_sentiment_score("XAUUSD", daily_score)
+#         else:
+#             logger.warning(
+#                 "sentiment_skipped",
+#                 reason="torch not installed — articles saved without sentiment labels",
+#             )
 
-        # Step 3 — Always save articles regardless of sentiment
-        saved = save_articles(articles)
-        logger.info("news_articles_saved", inserted=saved)
+#         # Step 3 — Always save articles regardless of sentiment
+#         saved = save_articles(articles)
+#         logger.info("news_articles_saved", inserted=saved)
 
-    except Exception as exc:
-        logger.error("fetch_and_analyze_news_failed", error=str(exc))
+#     except Exception as exc:
+#         logger.error("fetch_and_analyze_news_failed", error=str(exc))
 
-    logger.info("job_completed", job="fetch_and_analyze_news")
+#     logger.info("job_completed", job="fetch_and_analyze_news")
 
 
 
@@ -317,7 +317,7 @@ def create_scheduler() -> BackgroundScheduler:
 
     scheduler.add_job(
         func=fetch_and_analyze_news_job,
-        trigger=IntervalTrigger(minutes=30, timezone=NY_TZ),
+        trigger=IntervalTrigger(hours=6),  # 4 runs/day = 20 NewsAPI requests (free tier: 100/day)
         id="fetch_and_analyze_news",
         name="Fetch News and Analyze Sentiment",
         replace_existing=True,

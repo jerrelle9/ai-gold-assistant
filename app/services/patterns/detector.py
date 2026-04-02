@@ -284,13 +284,13 @@ def detect_fair_value_gaps(
     if len(df) < 3:
         return patterns
     
-    for i in range(2, len(df)):
-        c1 = df.iloc[i-2]
-        c2 = df.iloc[i-1]
-        c3 = df.iloc[i]
+    # for i in range(2, len(df)):
+    #     c1 = df.iloc[i-2]
+    #     c2 = df.iloc[i-1]
+    #     c3 = df.iloc[i]
 
 
-    for 
+    # for 
 
 
 
